@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tile Tower">
+<title>Tile Tower</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF1F6; --dot:#D3DBE6; --surface:#FFFFFF; --surface2:#E2E8F1; --ink:#1A2030; --muted:#4F5B70;
+  --primary:#5236C9; --on-primary:#FFFFFF; --accent:#E8475A; --on-accent:#FFFFFF;
+  --good:#1F8A55; --good-soft:#D6F2E3; --bad-soft:#FBDDE1; --line:#C3CDDB; --focus:#2563C9;
+  --display:"Fredoka","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Helvetica Neue",Arial,system-ui,sans-serif;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121722; --dot:#222B3B; --surface:#1B2232; --surface2:#263047; --ink:#EEF1F7; --muted:#AEB8CB;
+    --primary:#AFA2FF; --on-primary:#141024; --accent:#FF8394; --on-accent:#200A0E;
+    --good:#7EDCA8; --good-soft:#1C3A2C; --bad-soft:#47232B; --line:#34405A; --focus:#8CB8FF;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121722; --dot:#222B3B; --surface:#1B2232; --surface2:#263047; --ink:#EEF1F7; --muted:#AEB8CB;
+  --primary:#AFA2FF; --on-primary:#141024; --accent:#FF8394; --on-accent:#200A0E;
+  --good:#7EDCA8; --good-soft:#1C3A2C; --bad-soft:#47232B; --line:#34405A; --focus:#8CB8FF;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background-color:var(--bg);background-image:radial-gradient(var(--dot) 2px,transparent 2.5px);background-size:26px 26px;color:var(--ink);font-family:var(--body);font-size:19px;line-height:1.45;-webkit-text-size-adjust:100%;min-height:100vh;overflow-x:hidden}
+button{font:inherit;color:inherit;touch-action:manipulation;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.1;margin:0}
+p{margin:0 0 .6em}
+[hidden]{display:none!important}
+.wrap{max-width:980px;margin:0 auto;padding:16px 18px 40px}
+.btn{border:0;border-radius:16px;padding:12px 22px;min-height:56px;font-family:var(--display);font-weight:600;font-size:1.2rem;background:var(--primary);color:var(--on-primary);box-shadow:0 4px 0 rgba(0,0,0,.2)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+.btn.alt{background:var(--accent);color:var(--on-accent)}
+.btn.quiet{background:var(--surface2);color:var(--ink);box-shadow:none}
+.btn.small{min-height:46px;font-size:1rem;padding:8px 14px}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;padding:8px;font-size:.9rem}
+.center{text-align:center}
+
+/* home */
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.title{font-size:clamp(2rem,6vw,3rem);letter-spacing:-.01em}
+.title span{display:inline-block}
+.home{display:grid;grid-template-columns:minmax(260px,1fr) 1.15fr;gap:22px;align-items:start;margin-top:8px}
+@media (max-width:760px){.home{grid-template-columns:1fr}}
+.towerbox{background:var(--surface);border:2px solid var(--line);border-radius:28px;padding:14px 14px 10px;text-align:center}
+.towerbox svg{width:100%;height:auto;max-height:62vh}
+.towerbox .cap{font-family:var(--display);font-weight:600;font-size:1.05rem;color:var(--muted)}
+.panel{display:flex;flex-direction:column;gap:16px}
+.hi{font-family:var(--display);font-weight:600;font-size:1.6rem}
+.go{width:100%;min-height:84px;font-size:1.6rem;border-radius:22px}
+.ladder{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:16px}
+.ladder h2{font-size:1.3rem;margin-bottom:4px}
+.ladder .skill{font-family:var(--display);font-weight:600;font-size:1.5rem;margin:2px 0 10px}
+.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stg{border-radius:14px;background:var(--surface2);padding:8px 4px;text-align:center;font-size:.85rem;line-height:1.2;opacity:.55}
+.stg b{display:block;font-size:1.6rem;line-height:1.2}
+.stg.on{opacity:1;background:var(--good-soft);outline:3px solid var(--good)}
+.stg.past{opacity:1}
+.city{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:14px 16px}
+.city h2{font-size:1.2rem;margin-bottom:6px}
+.skyline{display:flex;align-items:flex-end;gap:6px;overflow-x:auto;min-height:80px;padding-bottom:4px}
+.skyline svg{height:90px;width:auto;flex:0 0 auto}
+.skyline .empty{color:var(--muted);font-size:.95rem}
+.tilebank{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:1.1rem}
+
+/* play */
+.playbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.playbar .mid{flex:1;display:flex;justify-content:center;gap:6px}
+.playbar .mid i{width:14px;height:14px;border-radius:4px;background:var(--surface2);border:2px solid var(--line);transform:rotate(45deg)}
+.playbar .mid i.ok{background:var(--primary);border-color:var(--primary)}
+.playbar .mid i.now{border-color:var(--accent)}
+.bank{font-family:var(--display);font-weight:700;font-size:1.25rem;display:flex;align-items:center;gap:6px}
+.card{background:var(--surface);border:3px solid var(--line);border-radius:26px;padding:16px 16px 18px;position:relative;max-width:820px;margin:0 auto}
+.card.right{border-color:var(--good)}
+.card.wrong{border-color:var(--accent)}
+.stagetag{display:inline-flex;gap:6px;align-items:center;background:var(--surface2);border-radius:999px;padding:3px 12px;font-size:.9rem;font-family:var(--display);font-weight:600}
+.eq{font-family:var(--display);font-weight:700;font-size:clamp(2.8rem,11vw,4.8rem);text-align:center;line-height:1.1;margin:10px 0 6px;font-variant-numeric:tabular-nums}
+.slot{display:inline-block;min-width:1.6em;border-bottom:6px solid var(--accent);color:var(--accent);padding:0 .1em}
+.slot.empty::before{content:"0";color:transparent}
+.viz{display:block;max-width:100%;height:auto;margin:6px auto;color:var(--ink)}
+.manipbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:6px 0}
+.taken{text-align:center;font-family:var(--display);font-weight:600;font-size:1.2rem;margin:4px 0}
+.hide{min-height:160px;display:grid;place-items:center;text-align:center;background:var(--surface2);border-radius:18px;margin:8px 0;padding:14px;font-size:1.15rem}
+.hide b{font-family:var(--display);font-size:1.4rem}
+.flashbar{height:10px;border-radius:6px;background:var(--surface2);overflow:hidden;margin:6px auto 0;max-width:420px}
+.flashbar div{height:100%;background:var(--primary);width:100%;transition:width linear}
+.tools{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.feedback{margin-top:12px;padding:14px;border-radius:18px;background:var(--bad-soft)}
+.feedback h3{font-size:1.5rem;margin-bottom:4px}
+.feedback .row{display:flex;justify-content:flex-end;margin-top:8px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px auto 0;max-width:440px}
+.pad button{min-height:64px;border:0;border-radius:16px;background:var(--surface);box-shadow:0 4px 0 var(--line);font-family:var(--display);font-weight:700;font-size:2rem}
+.pad button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.pad button.ck{background:var(--primary);color:var(--on-primary);box-shadow:0 4px 0 rgba(0,0,0,.25);font-size:1.3rem}
+.pad button.del{font-size:1.4rem}
+.pop{position:absolute;right:18px;top:14px;font-family:var(--display);font-weight:700;color:var(--good);font-size:1.4rem;animation:popup .8s ease-out forwards;pointer-events:none}
+@keyframes popup{from{opacity:0;transform:translateY(10px)}30%{opacity:1}to{opacity:0;transform:translateY(-26px)}}
+@media (prefers-reduced-motion: reduce){.pop{animation:none;opacity:0}}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(12,16,28,.55);display:grid;place-items:center;z-index:20;padding:18px}
+.sheet{background:var(--surface);border-radius:28px;padding:22px;max-width:680px;width:100%;max-height:calc(100% - 20px);overflow:auto;border:3px solid var(--line)}
+.sheet h2{font-size:1.8rem;margin-bottom:10px}
+.sheet .acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+.picks{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}
+.picks button{border:3px solid var(--line);border-radius:18px;background:var(--surface2);padding:10px}
+.picks button svg{width:100%;height:auto}
+.summary .big{font-family:var(--display);font-weight:700;font-size:4rem;line-height:1;color:var(--primary)}
+
+/* grown-ups */
+.field{width:100%;font:inherit;font-size:1.3rem;padding:12px 14px;border-radius:14px;border:3px solid var(--line);background:var(--bg);color:var(--ink)}
+.gu section{background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:16px;margin-bottom:14px}
+.gu h2{font-size:1.4rem;margin-bottom:8px}
+.gu p,.gu li,.gu td{font-size:1rem}
+.gu .tw{overflow-x:auto}
+.gu table{width:100%;border-collapse:collapse;min-width:540px}
+.gu td,.gu th{text-align:left;padding:7px 5px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:.95rem}
+.gu select{font:inherit;font-size:.95rem;padding:6px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink);max-width:100%}
+.gu textarea{width:100%;min-height:76px;font-family:ui-monospace,Menlo,monospace;font-size:.8rem;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink);padding:8px}
+.gu .rowbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+<section id="s-name" class="center" hidden>
+  <div id="nameTower" style="max-width:220px;margin:24px auto 6px"></div>
+  <h1 class="title">Tile Tower</h1>
+  <p style="margin-top:8px">Solve number puzzles, earn tiles, and build the tallest tower in town. What’s your name?</p>
+  <input id="nameIn" class="field" maxlength="20" autocomplete="off" aria-label="Your name" style="max-width:340px;text-align:center;margin:8px 0 16px">
+  <div><button class="btn alt" id="nameGo">Start building</button></div>
+</section>
+
+<section id="s-home" hidden>
+  <div class="top"><h1 class="title" id="homeTitle">Tile Tower</h1><button class="link" id="openGU">Grown-ups</button></div>
+  <div class="home">
+    <div class="towerbox"><div id="tower"></div><div class="cap" id="towerCap"></div></div>
+    <div class="panel">
+      <div class="hi" id="hi"></div>
+      <button class="btn alt go" id="startBtn">Build! 10 puzzles</button>
+      <div class="tilebank" id="tilebank"></div>
+      <div class="ladder">
+        <h2>What you’re learning</h2>
+        <div class="skill" id="skillName"></div>
+        <div class="stages" id="stages"></div>
+        <p id="stageNote" style="font-size:.95rem;color:var(--muted);margin:10px 0 0"></p>
+      </div>
+      <div class="city"><h2>Your tile city</h2><div class="skyline" id="skyline"></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="s-play" hidden>
+  <div class="playbar">
+    <button class="btn quiet small" id="quit" aria-label="Back to home">✕</button>
+    <div class="mid" id="prog"></div>
+    <div class="bank" id="bank"></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div id="inputArea"></div>
+</section>
+
+<section id="s-gu" class="gu" hidden></section>
+</main>
+
+<div class="modal" id="modal" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===== storage ===== */
+const KEY = "tileTower.v1";
+const TOWER_FLOORS = 12, TILES_PER_FLOOR = 4;
+function defaults(){ return {name:"", unlocked:1, sk:{}, seenIntro:{}, tiles:0, floors:[], city:[], days:[], total:0}; }
+function load(){ try{ const r = localStorage.getItem(KEY); if(r) return Object.assign(defaults(), JSON.parse(r)); }catch(e){} return defaults(); }
+let S = load();
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+/* ===== helpers ===== */
+const $ = s => document.querySelector(s);
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const strip = h => String(h).replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
+const dayStr = d => { d = d||new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+function speak(t){ try{ if(!window.speechSynthesis) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t.replace(/−/g," minus ").replace(/\+/g," plus ")); u.rate=.9; speechSynthesis.speak(u); }catch(e){} }
+function show(id){ ["s-name","s-home","s-play","s-gu"].forEach(s => $("#"+s).hidden = s!==id); window.scrollTo(0,0); }
+function openModal(h){ $("#sheet").innerHTML = h; $("#modal").hidden = false; const b = $("#sheet").querySelector(".acts .btn:last-child") || $("#sheet").querySelector("button"); if(b) b.focus(); }
+function closeModal(){ $("#modal").hidden = true; $("#sheet").innerHTML = ""; try{speechSynthesis.cancel()}catch(e){} }
+const FONT = `font-family="Fredoka, Arial Rounded MT Bold, Arial, sans-serif"`;
+
+/* ===== magnetic tiles ===== */
+const TC = [
+  {f:"#EF4B5C",e:"#B8283A"},{f:"#F7A23B",e:"#C77412"},{f:"#F6D24A",e:"#C9A215"},
+  {f:"#3FC17D",e:"#1E8A50"},{f:"#3C8DE8",e:"#1C5FB0"},{f:"#9B62E0",e:"#6A36AE"},{f:"#2CC2C2",e:"#178A8A"}
+];
+function tile(x, y, s, c, kind){
+  const col = TC[c % TC.length];
+  let h = `<rect x="${x+2}" y="${y+2}" width="${s-4}" height="${s-4}" rx="5" fill="${col.f}" fill-opacity=".62" stroke="${col.e}" stroke-width="4"/>`;
+  h += `<rect x="${x+9}" y="${y+9}" width="${s-18}" height="${s-18}" rx="3" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>`;
+  if(kind===1) h += `<circle cx="${x+s/2}" cy="${y+s/2}" r="${s*0.22}" fill="#fff" fill-opacity=".55" stroke="${col.e}" stroke-width="2"/>`;
+  if(kind===2) h += `<path d="M${x+s/2} ${y+12} L${x+s-12} ${y+s/2} L${x+s/2} ${y+s-12} L${x+12} ${y+s/2} Z" fill="#fff" fill-opacity=".45" stroke="${col.e}" stroke-width="2"/>`;
+  h += `<path d="M${x+6} ${y+14} q2 -8 10 -9" stroke="#fff" stroke-opacity=".8" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  return h;
+}
+function tri(x1,y1,x2,y2,x3,y3,c){ const col = TC[c%TC.length]; return `<path d="M${x1} ${y1} L${x2} ${y2} L${x3} ${y3} Z" fill="${col.f}" fill-opacity=".62" stroke="${col.e}" stroke-width="4" stroke-linejoin="round"/>`; }
+function towerSVG(floors, opts){
+  opts = opts||{}; const s = 64, w = 4*s, pad = 18, roofH = 70;
+  const n = floors.length, rows = Math.max(n, opts.minRows||0);
+  const H = pad + roofH + rows*s + 28, Wd = w + pad*2;
+  const by = H - 28;
+  let g = `<rect x="0" y="${by}" width="${Wd}" height="28" rx="8" fill="#8BC77E"/><rect x="0" y="${by}" width="${Wd}" height="6" fill="#6FAE62"/>`;
+  if(opts.ghost) for(let r=n; r<rows; r++) for(let i=0;i<4;i++) g += `<rect x="${pad+i*s+4}" y="${by-(r+1)*s+4}" width="${s-8}" height="${s-8}" rx="6" fill="none" stroke="currentColor" stroke-opacity=".18" stroke-width="2" stroke-dasharray="6 6"/>`;
+  floors.forEach((f,r) => { for(let i=0;i<4;i++) g += tile(pad+i*s, by-(r+1)*s, s, f.c[i], f.k); });
+  const top = by - n*s;
+  const rc = n ? floors[n-1].c[0] : 0;
+  g += tri(pad, top, pad+w/2, top-roofH, pad+w/2, top, rc) + tri(pad+w/2, top, pad+w/2, top-roofH, pad+w, top, (rc+3)%TC.length);
+  if(opts.flag) g += `<line x1="${pad+w/2}" y1="${top-roofH}" x2="${pad+w/2}" y2="${top-roofH-40}" stroke="currentColor" stroke-width="3"/><path d="M${pad+w/2} ${top-roofH-40} l34 9 l-34 9 z" fill="#EF4B5C"/>`;
+  const vy = opts.flag ? -46 : 0;
+  return `<svg viewBox="0 ${vy} ${Wd} ${H - vy}" role="img" aria-label="${esc(opts.label||"tile tower")}" style="color:var(--ink)">${g}</svg>`;
+}
+function randomFloor(){ const base = rnd(0,6); const pal = pick([[0,1,2,3],[3,4,5,6],[0,4,0,4],[1,5,1,5],[2,6,2,6]]); return {c:pal.map(p => (p+base)%TC.length), k:rnd(0,2)}; }
+
+/* ===== base-ten blocks ===== */
+const U = 14;
+const BL = {flat:"#3F86C9", rod:"#2F6FAE", cube:"#6AA9DE", edge:"#173F66", grid:"#9CC6EC"};
+function xmark(x,y,w,h){ return `<path d="M${x+3} ${y+3} L${x+w-3} ${y+h-3} M${x+w-3} ${y+3} L${x+3} ${y+h-3}" stroke="#E8475A" stroke-width="3" stroke-linecap="round" pointer-events="none"/>`; }
+function flatS(x,y,i,cr,tap){ const L=10*U; let s = `<g ${tap?`class="tb" data-k="f" data-i="${i}"`:""} opacity="${cr?.25:1}"><rect x="${x}" y="${y}" width="${L}" height="${L}" fill="${BL.flat}" stroke="${BL.edge}" stroke-width="2"/>`; for(let k=1;k<10;k++) s += `<line x1="${x+k*U}" y1="${y+2}" x2="${x+k*U}" y2="${y+L-2}" stroke="${BL.grid}" stroke-width="1"/><line x1="${x+2}" y1="${y+k*U}" x2="${x+L-2}" y2="${y+k*U}" stroke="${BL.grid}" stroke-width="1"/>`; s += `</g>`; if(cr) s += xmark(x,y,L,L); return s; }
+function rodS(x,y,i,cr,tap){ const L=10*U; let s = `<g ${tap?`class="tb" data-k="r" data-i="${i}"`:""} opacity="${cr?.25:1}"><rect x="${x}" y="${y}" width="${U}" height="${L}" fill="${BL.rod}" stroke="${BL.edge}" stroke-width="2"/>`; for(let k=1;k<10;k++) s += `<line x1="${x+2}" y1="${y+k*U}" x2="${x+U-2}" y2="${y+k*U}" stroke="${BL.grid}" stroke-width="1"/>`; s += `</g>`; if(cr) s += xmark(x,y,U,L); return s; }
+function cubeS(x,y,i,cr,tap){ let s = `<rect ${tap?`class="tb" data-k="c" data-i="${i}"`:""} x="${x}" y="${y}" width="${U}" height="${U}" fill="${BL.cube}" stroke="${BL.edge}" stroke-width="1.5" opacity="${cr?.25:1}"/>`; if(cr) s += xmark(x,y,U,U); return s; }
+// group: {f:[bool], r:[bool], c:[bool]} (true = taken away)
+function groupLayout(g, x, y, tap){
+  let s = "", cx = x; const L = 10*U;
+  g.f.forEach((cr,i) => { s += flatS(cx,y,i,cr,tap); cx += L + 8; }); if(g.f.length) cx += 8;
+  g.r.forEach((cr,i) => { s += rodS(cx,y,i,cr,tap); cx += U + 7; }); if(g.r.length) cx += 8;
+  g.c.forEach((cr,i) => { const col = Math.floor(i/5), row = i%5; s += cubeS(cx + col*(U+6), y + L - (row+1)*(U+4) + 4, i, cr, tap); });
+  cx += Math.ceil(g.c.length/5)*(U+6);
+  return {s, w: Math.max(cx - x, 30)};
+}
+function mkGroup(n){ return {f:Array(Math.floor(n/100)).fill(false), r:Array(Math.floor(n%100/10)).fill(false), c:Array(n%10).fill(false)}; }
+function blocksSVG(rows, tap){
+  // rows: [{label, g}]
+  let s = "", y = 6, maxW = 0;
+  rows.forEach(rw => {
+    s += `<text x="8" y="${y+22}" font-size="22" font-weight="700" fill="currentColor" ${FONT}>${esc(rw.label)}</text>`;
+    const lay = groupLayout(rw.g, 8, y+32, tap); s += lay.s; maxW = Math.max(maxW, lay.w + 16);
+    y += 32 + 10*U + 16;
+  });
+  const vw = Math.max(maxW, 320);
+  return `<svg viewBox="0 0 ${vw} ${y}" class="viz" style="width:${vw}px" role="img" aria-label="base ten blocks">${s}</svg>`;
+}
+function countG(g, takenOnly){ const c = arr => arr.filter(x => takenOnly ? x : true).length; return 100*c(g.f) + 10*c(g.r) + c(g.c); }
+
+/* ===== number line ===== */
+function jumpSteps(a, b, op, skill){
+  const sg = op==="+" ? 1 : -1; let cur = a; const out = [];
+  if(skill==="friendly"){ const up = (10 - a%10)%10; if(up && up < b){ out.push({d:up, to:a+up}); out.push({d:b-up, to:a+b}); return out; } }
+  const parts = [Math.floor(b/100)*100, Math.floor(b%100/10)*10, b%10];
+  parts.forEach((d, idx) => {
+    if(!d) return;
+    const unit = idx===1 ? 100 : idx===2 ? 10 : 0;
+    if(unit){
+      const gap = sg>0 ? (unit - cur%unit)%unit : cur%unit;
+      if(gap && d > gap){ cur += sg*gap; out.push({d:sg*gap, to:cur}); cur += sg*(d-gap); out.push({d:sg*(d-gap), to:cur}); return; }
+    }
+    cur += sg*d; out.push({d:sg*d, to:cur});
+  });
+  return out;
+}
+function nlSVG(a, steps, filled, current, wrongSet){
+  const pts = [a].concat(steps.map(s => s.to)), n = pts.length, Wd = 680, x0 = 60, x1 = Wd-60, ly = 118;
+  const sp = n>1 ? (x1-x0)/(n-1) : 0;
+  let s = `<line x1="${x0-34}" y1="${ly}" x2="${x1+34}" y2="${ly}" stroke="currentColor" stroke-width="3"/>`;
+  for(let i=0;i<n-1;i++){
+    const a1 = x0+i*sp, a2 = x0+(i+1)*sp, m = (a1+a2)/2, d = steps[i].d;
+    s += `<path d="M${a1} ${ly-4} Q${m} ${ly-70} ${a2} ${ly-4}" fill="none" stroke="#5236C9" stroke-width="3"/><path d="M${a2} ${ly-4} l-11 -5 l3 11 z" fill="#5236C9"/>`;
+    s += `<rect x="${m-36}" y="${ly-74}" width="72" height="30" rx="15" fill="#EAE5FF"/><text x="${m}" y="${ly-52}" text-anchor="middle" font-size="20" font-weight="700" fill="#3A2496" ${FONT}>${d>0?"+":"−"}${Math.abs(d)}</text>`;
+  }
+  pts.forEach((p,i) => {
+    const x = x0+i*sp, shown = i===0 || i <= filled, isCur = i===current, wr = wrongSet && wrongSet.has(i);
+    s += `<line x1="${x}" y1="${ly-10}" x2="${x}" y2="${ly+10}" stroke="currentColor" stroke-width="3"/>`;
+    s += `<rect x="${x-40}" y="${ly+18}" width="80" height="44" rx="10" fill="${wr?"#FBDDE1":shown?"#E4F4EA":"#FFFFFF"}" stroke="${isCur?"#E8475A":wr?"#E8475A":"#9AA7BA"}" stroke-width="${isCur?4:2}" ${isCur?'stroke-dasharray="7 5"':""}/>`;
+    s += `<text x="${x}" y="${ly+49}" text-anchor="middle" font-size="24" font-weight="700" fill="#1A2030" ${FONT}>${shown ? p : (isCur && G && G.entry ? esc(G.entry) : "?")}</text>`;
+  });
+  return `<svg viewBox="0 0 ${Wd} ${ly+70}" class="viz" style="width:${Wd}px" role="img" aria-label="number line">${s}</svg>`;
+}
+
+/* ===== skills ===== */
+function digits(n){ return [Math.floor(n/100), Math.floor(n%100/10), n%10]; }
+const SKILLS = [
+  {id:"tens", name:"Add and subtract tens", ex:"40 + 30", gen(){ if(Math.random()<.55){ const a=10*rnd(1,8); return {a, b:10*rnd(1,9-a/10), op:"+"}; } const a=10*rnd(2,10); return {a, b:10*rnd(1,a/10-1), op:"−"}; },
+    intro:`<p>A rod is 10. Four rods and three more rods make seven rods.</p><p><b>40 + 30 = 70.</b> It’s just like 4 + 3 = 7, but with tens!</p>`, demo:{a:40,b:30,op:"+"}},
+  {id:"tensany", name:"Add or take away tens", ex:"46 + 30", gen(){ if(Math.random()<.55){ let a=rnd(11,69); if(a%10===0)a++; return {a, b:10*rnd(1,9-Math.floor(a/10)), op:"+"}; } let a=rnd(31,99); if(a%10===0)a--; return {a, b:10*rnd(1,Math.floor(a/10)-1), op:"−"}; },
+    intro:`<p>When you add tens, only the rods change. The cubes (ones) stay the same.</p><p><b>46 + 30:</b> 4 rods + 3 rods = 7 rods, and the 6 cubes stay. That’s <b>76</b>.</p>`, demo:{a:46,b:30,op:"+"}},
+  {id:"noregroup", name:"Two-digit, no trading", ex:"34 + 25", gen(){ if(Math.random()<.55){ const ta=rnd(1,7), tb=rnd(1,8-ta), oa=rnd(1,8), ob=rnd(0,9-oa); return {a:10*ta+oa, b:10*tb+ob, op:"+"}; } const ta=rnd(2,9), oa=rnd(1,9), tb=rnd(1,ta-1), ob=rnd(0,oa); return {a:10*ta+oa, b:10*tb+ob, op:"−"}; },
+    intro:`<p>Jump the tens first, then the ones.</p><p><b>34 + 25:</b> 34 + 20 = 54. Then 54 + 5 = <b>59</b>.</p>`, demo:{a:34,b:25,op:"+"}},
+  {id:"bridge", name:"Cross a ten with ones", ex:"38 + 5", gen(){ if(Math.random()<.55){ const oa=rnd(3,9), a=10*rnd(1,8)+oa; return {a, b:rnd(11-oa,9), op:"+"}; } const oa=rnd(0,6), a=10*rnd(2,9)+oa; return {a, b:rnd(oa+1,9), op:"−"}; },
+    intro:`<p>Stop at the ten first!</p><p><b>38 + 5:</b> 38 needs 2 to reach 40. Break 5 into 2 and 3. 38 + 2 = 40, then 40 + 3 = <b>43</b>.</p><p>Taking away works too: <b>43 − 6</b> → 43 − 3 = 40, then 40 − 3 = 37.</p>`, demo:{a:38,b:5,op:"+"}},
+  {id:"addtrade", name:"Two-digit adding with trading", ex:"38 + 27", gen(){ const oa=rnd(2,9), ob=rnd(10-oa,9), ta=rnd(1,7), tb=rnd(1,8-ta); return {a:10*ta+oa, b:10*tb+ob, op:"+"}; },
+    intro:`<p>Sometimes the ones make a new ten! With blocks, you trade 10 cubes for 1 rod.</p><p><b>38 + 27:</b> 38 + 20 = 58. Then 58 + 2 = 60, and 60 + 5 = <b>65</b>.</p>`, demo:{a:38,b:27,op:"+"}},
+  {id:"subtrade", name:"Two-digit taking away with trading", ex:"52 − 18", gen(){ const oa=rnd(0,8), ob=rnd(oa+1,9), ta=rnd(3,9), tb=rnd(1,ta-1); return {a:10*ta+oa, b:10*tb+ob, op:"−"}; },
+    intro:`<p>Not enough cubes to take away? Break a rod into 10 cubes!</p><p>In your head: <b>52 − 18:</b> 52 − 10 = 42. Then 42 − 2 = 40, and 40 − 6 = <b>34</b>.</p>`, demo:{a:52,b:18,op:"−"}},
+  {id:"friendly", name:"Friendly-number tricks", ex:"49 + 25", gen(){ let a=10*rnd(1,6)+pick([8,9]); return {a, b:rnd(12, Math.min(49, 99-a)), op:"+"}; },
+    intro:`<p>49 is almost 50! Numbers ending in 0 are friendly.</p><p><b>49 + 25:</b> take 1 from the 25 to make 50. Now it’s 50 + 24 = <b>74</b>.</p>`, demo:{a:49,b:25,op:"+"}},
+  {id:"hundreds", name:"Add and subtract hundreds", ex:"300 + 400", gen(){ if(Math.random()<.55){ const a=100*rnd(1,8); return {a, b:100*rnd(1,9-a/100), op:"+"}; } const a=100*rnd(2,10); return {a, b:100*rnd(1,a/100-1), op:"−"}; },
+    intro:`<p>A big flat is 100. It’s 10 rods put together.</p><p><b>300 + 400:</b> 3 flats + 4 flats = 7 flats. That’s <b>700</b>. Just like 3 + 4!</p>`, demo:{a:300,b:400,op:"+"}},
+  {id:"more", name:"10 or 100 more and less", ex:"456 + 100", gen(){ const b=pick([10,100]); if(Math.random()<.5){ return {a:rnd(101, 999-b), b, op:"+"}; } return {a:rnd(100+b, 999), b, op:"−"}; },
+    intro:`<p><b>100 more:</b> the hundreds go up by 1. 456 + 100 = 556.</p><p><b>10 more:</b> the tens go up by 1. 456 + 10 = 466.</p><p>Less works the same way, going down.</p>`, demo:{a:456,b:100,op:"+"}},
+  {id:"place3", name:"Three-digit, no trading", ex:"234 + 152", gen(){ const [ha,ta,oa] = [rnd(1,7),rnd(0,8),rnd(0,8)], a = 100*ha+10*ta+oa; const kind = pick(["tens","hund","full","full"]);
+      if(Math.random()<.6){ if(kind==="tens" && ta<9) return {a, b:10*rnd(1,9-ta), op:"+"}; if(kind==="hund") return {a, b:100*rnd(1,9-ha), op:"+"}; return {a, b:100*rnd(1,9-ha)+10*rnd(0,9-ta)+rnd(0,9-oa), op:"+"}; }
+      const A = 100*rnd(2,9)+10*rnd(1,9)+rnd(1,9), [h2,t2,o2] = digits(A); return {a:A, b:100*rnd(1,h2-1)+10*rnd(0,t2)+rnd(0,o2), op:"−"}; },
+    intro:`<p>Jump by hundreds, then tens, then ones.</p><p><b>234 + 152:</b> 234 + 100 = 334. 334 + 50 = 384. 384 + 2 = <b>386</b>.</p>`, demo:{a:234,b:152,op:"+"}},
+  {id:"add3", name:"Three-digit adding with trading", ex:"268 + 154", gen(){ const ha=rnd(1,6), hb=rnd(1,7-ha); let ta,tb,oa,ob;
+      if(Math.random()<.5){ oa=rnd(2,9); ob=rnd(10-oa,9); ta=rnd(0,7); tb=rnd(0,8-ta); } else { oa=rnd(0,8); ob=rnd(0,9-oa); ta=rnd(2,9); tb=rnd(10-ta,9); }
+      return {a:100*ha+10*ta+oa, b:100*hb+10*tb+ob, op:"+"}; },
+    intro:`<p>Same jumps: hundreds, tens, ones. If a jump crosses a hundred, stop at the hundred first!</p><p><b>268 + 154:</b> 268 + 100 = 368. 368 + 32 = 400, then + 18 = 418. Then 418 + 4 = <b>422</b>.</p>`, demo:{a:268,b:154,op:"+"}},
+  {id:"sub3", name:"Three-digit taking away with trading", ex:"432 − 158", gen(){ const ha=rnd(3,9), hb=rnd(1,ha-1); let ta,tb,oa,ob;
+      if(Math.random()<.5){ oa=rnd(0,8); ob=rnd(oa+1,9); ta=rnd(1,9); tb=rnd(0,ta-1); } else { oa=rnd(0,9); ob=rnd(0,oa); ta=rnd(0,8); tb=rnd(ta+1,9); }
+      return {a:100*ha+10*ta+oa, b:100*hb+10*tb+ob, op:"−"}; },
+    intro:`<p>Jump back by hundreds, tens, then ones. Stop at a ten or hundred when you cross one.</p><p><b>432 − 158:</b> 432 − 100 = 332. 332 − 32 = 300, then − 18 = 282. 282 − 2 = 280, then − 6 = <b>274</b>.</p>`, demo:{a:432,b:158,op:"−"}}
+];
+const STAGES = [
+  {ico:"🧱", kid:"Use the blocks", note:"Build it with blocks, then count."},
+  {ico:"👀", kid:"Peek and picture", note:"The blocks show for a moment, then you picture them in your head."},
+  {ico:"↪️", kid:"Jump the line", note:"No blocks. Make jumps on a number line."},
+  {ico:"💭", kid:"In your head", note:"Just the numbers. You’ve got this!"}
+];
+function sk(i){ const id = SKILLS[i].id; return S.sk[id] || (S.sk[id] = {stage:1, hist:[], clean:0, helped:0, wrong:0, mastered:false}); }
+
+/* ===== game ===== */
+let G = null;
+function startSession(){
+  G = {idx:0, total:10, right:0, earned:0, levelUps:[], newSkill:null, entry:"", last:[]};
+  show("s-play"); nextProblem();
+}
+function chooseSkill(){
+  const ws = []; let tot = 0;
+  for(let i=0;i<S.unlocked;i++){ const st = sk(i); let w = st.mastered ? 1 : (i===S.unlocked-1 ? 4 : 3); if(G.last.slice(0,2).every(x=>x===i) && G.last.length>=2) w *= 0.2; ws.push(w); tot += w; }
+  let r = Math.random()*tot; for(let i=0;i<ws.length;i++){ r -= ws[i]; if(r<=0) return i; } return ws.length-1;
+}
+function renderProg(){
+  $("#prog").innerHTML = Array.from({length:G.total},(_,i)=>`<i class="${i<G.idx?"ok":i===G.idx?"now":""}"></i>`).join("");
+  $("#bank").innerHTML = `${miniTile(4)} ${S.tiles % TILES_PER_FLOOR + (G.earned ? "" : "")}<span style="opacity:.6">/${TILES_PER_FLOOR}</span>`;
+}
+function miniTile(c){ return `<svg viewBox="0 0 30 30" width="26" height="26" aria-hidden="true">${tile(0,0,30,c,0).replace(/stroke-width="4"/,'stroke-width="3"')}</svg>`; }
+function nextProblem(){
+  if(!G) return;
+  if(G.idx >= G.total){ finishSession(); return; }
+  const si = chooseSkill(); G.last.unshift(si);
+  const p = SKILLS[si].gen(); p.ans = p.op==="+" ? p.a+p.b : p.a-p.b; p.si = si; p.stage = sk(si).stage; p.helped = false; p.errors = 0;
+  G.p = p; G.entry = ""; G.locked = false;
+  renderProg();
+  const id = SKILLS[si].id;
+  if(!S.seenIntro[id]) showSkillIntro(si, () => { S.seenIntro[id] = true; save(); renderProblem(); });
+  else renderProblem();
+}
+function showSkillIntro(si, go){
+  const s = SKILLS[si], d = s.demo, steps = jumpSteps(d.a, d.b, d.op, s.id);
+  const body = `<h2>New puzzle: ${esc(s.name)}</h2>${s.intro}${nlSVG(d.a, steps, steps.length, -1)}`;
+  openModal(body + `<div class="acts"><button class="btn quiet" id="iSay">🔊 Read to me</button><button class="btn alt" id="iGo">Let’s try it!</button></div>`);
+  $("#iSay").onclick = () => speak(strip(s.intro));
+  $("#iGo").onclick = () => { closeModal(); go(); };
+}
+function eqHTML(p, withSlot){
+  return `${p.a} ${p.op} ${p.b} = ` + (withSlot ? `<span class="slot ${G.entry?"":"empty"}" id="slot">${esc(G.entry)}</span>` : "");
+}
+function renderProblem(){
+  const p = G.p, st = STAGES[p.stage-1];
+  const c = $("#card"); c.className = "card";
+  let h = `<div class="center"><span class="stagetag">${st.ico} ${st.kid}</span></div>`;
+  if(p.stage===3){
+    p.steps = jumpSteps(p.a, p.b, p.op, SKILLS[p.si].id); p.blank = 1; p.wrongSet = new Set();
+    h += `<div class="eq" style="font-size:clamp(2.2rem,8vw,3.4rem)">${p.a} ${p.op} ${p.b}</div><p class="center" style="margin:0">Fill in where each jump lands.</p><div id="nl"></div>`;
+  } else {
+    h += `<div class="eq" id="eq">${eqHTML(p, true)}</div>`;
+  }
+  h += `<div id="manip"></div><div class="tools" id="tools"></div><div id="fb"></div>`;
+  c.innerHTML = h;
+  if(p.stage===1) startManip(false);
+  if(p.stage===2) startFlash();
+  if(p.stage===3) drawNL();
+  const tools = $("#tools");
+  if(p.stage>=3){
+    const b = document.createElement("button"); b.className = "btn quiet small"; b.textContent = "🧱 Show me the blocks";
+    b.onclick = () => { p.helped = true; startManip(true); b.remove(); }; tools.appendChild(b);
+  }
+  G.t0 = Date.now();
+  renderPad();
+}
+function drawNL(){ const p = G.p; $("#nl").innerHTML = nlSVG(p.a, p.steps, p.blank-1, p.blank, p.wrongSet); }
+
+/* manipulatives */
+function startManip(asHelp){
+  const p = G.p;
+  if(p.op==="+") G.m = {mode:"add", rows:[{label:String(p.a), g:mkGroup(p.a)},{label:"+ "+p.b, g:mkGroup(p.b)}], joined:false};
+  else G.m = {mode:"sub", g:mkGroup(p.a)};
+  drawManip();
+}
+function drawManip(){
+  const m = G.m, p = G.p, box = $("#manip"); if(!box) return;
+  let h = "";
+  if(m.mode==="add"){
+    h += blocksSVG(m.rows, false);
+    const g = m.rows[m.rows.length-1].g; const btns = [];
+    if(!m.joined) btns.push(`<button class="btn small" data-a="join">Put them together</button>`);
+    else { if(g.c.length >= 10) btns.push(`<button class="btn small" data-a="tc">Trade 10 cubes for 1 rod</button>`); if(g.r.length >= 10) btns.push(`<button class="btn small" data-a="tr">Trade 10 rods for 1 flat</button>`); }
+    if(btns.length) h += `<div class="manipbtns">${btns.join("")}</div>`;
+    if(m.joined) h += `<p class="center" style="margin:4px 0 0">Count the flats, rods, and cubes.</p>`;
+  } else {
+    h += blocksSVG([{label:`${p.a}  — tap blocks to take away ${p.b}`, g:m.g}], true);
+    const taken = countG(m.g, true);
+    h += `<div class="taken">Taken away: ${taken} of ${p.b}${taken===p.b?" ✓":""}</div>`;
+    const btns = [];
+    if(m.g.r.some(x=>!x)) btns.push(`<button class="btn small quiet" data-a="br">Break a rod into 10 cubes</button>`);
+    if(m.g.f.some(x=>!x)) btns.push(`<button class="btn small quiet" data-a="bf">Break a flat into 10 rods</button>`);
+    if(btns.length) h += `<div class="manipbtns">${btns.join("")}</div>`;
+  }
+  box.innerHTML = h;
+  box.querySelectorAll("[data-a]").forEach(b => b.onclick = () => manipAct(b.dataset.a));
+  box.querySelectorAll(".tb").forEach(el => el.addEventListener("click", () => {
+    const k = el.dataset.k, i = +el.dataset.i, arr = m.g[k]; arr[i] = !arr[i]; drawManip();
+  }));
+}
+function manipAct(a){
+  const m = G.m;
+  if(a==="join"){ const A = m.rows[0].g, B = m.rows[1].g; m.rows = [{label:"All together", g:{f:A.f.concat(B.f), r:A.r.concat(B.r), c:A.c.concat(B.c)}}]; m.joined = true; }
+  if(a==="tc"){ const g = m.rows[0].g; g.c.splice(0,10); g.r.push(false); }
+  if(a==="tr"){ const g = m.rows[0].g; g.r.splice(0,10); g.f.push(false); }
+  if(a==="br"){ const g = m.g, i = g.r.lastIndexOf(false); g.r.splice(i,1); for(let k=0;k<10;k++) g.c.push(false); }
+  if(a==="bf"){ const g = m.g, i = g.f.lastIndexOf(false); g.f.splice(i,1); for(let k=0;k<10;k++) g.r.push(false); }
+  drawManip();
+}
+/* flash */
+function startFlash(){
+  const p = G.p, ms = 4000;
+  const rows = p.op==="+" ? [{label:String(p.a), g:mkGroup(p.a)},{label:"+ "+p.b, g:mkGroup(p.b)}] : [{label:`${p.a}  (take away ${p.b})`, g:mkGroup(p.a)}];
+  $("#manip").innerHTML = blocksSVG(rows, false) + `<div class="flashbar"><div id="fbar"></div></div>`;
+  requestAnimationFrame(() => { const b = $("#fbar"); if(b){ b.style.transitionDuration = ms+"ms"; requestAnimationFrame(()=>{ b.style.width = "0%"; }); } });
+  const token = {}; G.flashToken = token;
+  setTimeout(() => {
+    if(!G || G.flashToken!==token || G.locked) return;
+    $("#manip").innerHTML = `<div class="hide"><div><b>🙈 Picture the blocks in your head</b><br>${p.op==="+" ? `What do they make all together?` : `What’s left after you take away ${p.b}?`}<div class="tools"><button class="btn quiet small" id="peek">👀 Peek again</button></div></div></div>`;
+    $("#peek").onclick = () => { p.helped = true; startFlash(); };
+  }, ms);
+}
+
+/* pad */
+function renderPad(){
+  const keys = [1,2,3,4,5,6,7,8,9,"del",0,"ok"];
+  $("#inputArea").innerHTML = `<div class="pad" id="pad"></div>`;
+  keys.forEach(k => {
+    const b = document.createElement("button");
+    if(k==="del"){ b.textContent="⌫"; b.className="del"; b.setAttribute("aria-label","Delete"); }
+    else if(k==="ok"){ b.textContent="Check"; b.className="ck"; }
+    else b.textContent = k;
+    b.onclick = () => press(k); $("#pad").appendChild(b);
+  });
+}
+function target(){ const p = G.p; return p.stage===3 ? [p.a].concat(p.steps.map(s=>s.to))[p.blank] : p.ans; }
+function press(k){
+  if(!G || G.locked) return;
+  if(k==="del") G.entry = G.entry.slice(0,-1);
+  else if(k==="ok"){ if(G.entry!=="") submit(); return; }
+  else if(G.entry.length < 4) G.entry += String(k);
+  showEntry();
+  if(G.entry.length === String(target()).length) setTimeout(() => { if(G && !G.locked && G.entry.length===String(target()).length) submit(); }, 160);
+}
+function showEntry(){
+  if(G.p.stage===3) drawNL();
+  else { const s = $("#slot"); if(s){ s.textContent = G.entry; s.className = "slot" + (G.entry?"":" empty"); } }
+}
+function submit(){
+  const p = G.p, v = Number(G.entry);
+  if(p.stage===3){
+    const pts = [p.a].concat(p.steps.map(s=>s.to));
+    if(v !== pts[p.blank]){ p.errors++; p.wrongSet.add(p.blank); }
+    p.blank++; G.entry = "";
+    if(p.blank < pts.length){ drawNL(); return; }
+    drawNL();
+    resolve(p.errors===0);
+    return;
+  }
+  resolve(v===p.ans);
+}
+function resolve(ok){
+  const p = G.p; G.locked = true; G.flashToken = null;
+  const ms = Date.now() - G.t0, st = sk(p.si);
+  const code = !ok ? "x" : p.helped ? "h" : "c";
+  if(code==="c") st.clean++; else if(code==="h") st.helped++; else st.wrong++;
+  st.hist.push(code); st.hist = st.hist.slice(-8);
+  S.total++;
+  // stage changes
+  const last5 = st.hist.slice(-5), clean5 = last5.filter(x=>x==="c").length, bad4 = st.hist.slice(-4).filter(x=>x==="x").length;
+  let levelMsg = "";
+  if(st.stage < 4 && last5.length >= 5 && clean5 >= 4){ st.stage++; st.hist = []; levelMsg = `Level up! Now: ${STAGES[st.stage-1].ico} ${STAGES[st.stage-1].kid}`; S.tiles += 2; G.earned += 2; G.levelUps.push(SKILLS[p.si].name + " → " + STAGES[st.stage-1].kid); }
+  else if(st.stage===4 && !st.mastered && st.hist.length>=6 && st.hist.slice(-6).filter(x=>x==="c").length>=5){ st.mastered = true; levelMsg = "Mastered! ⭐"; }
+  else if(st.stage > 1 && st.hist.length >= 4 && bad4 >= 3){ st.stage--; st.hist = []; }
+  if(S.unlocked < SKILLS.length && sk(S.unlocked-1).stage >= 3){ S.unlocked++; G.newSkill = SKILLS[S.unlocked-1].name; }
+  if(ok){ S.tiles++; G.earned++; G.right++; }
+  save();
+  const c = $("#card");
+  c.className = "card " + (ok ? "right" : "wrong");
+  $("#inputArea").innerHTML = "";
+  $("#tools").innerHTML = "";
+  if(ok){
+    if(p.stage!==3){ const s = $("#slot"); if(s){ s.textContent = p.ans; s.className="slot"; } }
+    const pop = document.createElement("div"); pop.className = "pop"; pop.textContent = levelMsg || pick(["+1 tile!","Yes!","Click! +1 tile","Nice building!"]); c.appendChild(pop);
+    renderProg();
+    setTimeout(() => { if(!G) return; G.idx++; nextProblem(); }, levelMsg ? 1500 : 800);
+  } else {
+    const steps = jumpSteps(p.a, p.b, p.op, SKILLS[p.si].id);
+    const words = steps.map((s,i) => `${i===0?p.a:steps[i-1].to} ${s.d>0?"+":"−"} ${Math.abs(s.d)} = ${s.to}`).join(". ");
+    $("#fb").innerHTML = `<div class="feedback"><h3>${p.a} ${p.op} ${p.b} = ${p.ans}</h3><p>Let’s jump it together:</p>${nlSVG(p.a, steps, steps.length, -1)}<p>${words}.</p><div class="row"><button class="btn quiet small" id="fSay">🔊 Read to me</button>&nbsp;<button class="btn" id="gotit">Got it</button></div></div>`;
+    $("#fSay").onclick = () => speak(words);
+    $("#gotit").onclick = () => { G.idx++; nextProblem(); };
+    $("#gotit").focus();
+    $("#fb").scrollIntoView && $("#fb").scrollIntoView({behavior:"smooth", block:"nearest"});
+  }
+}
+
+/* finish + floors */
+function finishSession(){
+  const g = G; G = null;
+  const t = dayStr(); if(!S.days.includes(t)){ S.days.push(t); S.days = S.days.slice(-120); }
+  save();
+  const floorsToBuild = Math.floor(S.tiles / TILES_PER_FLOOR);
+  let extra = "";
+  if(g.levelUps.length) extra += `<p>🚀 ${g.levelUps.map(esc).join("<br>🚀 ")}</p>`;
+  if(g.newSkill) extra += `<p>🔓 New puzzle unlocked: <b>${esc(g.newSkill)}</b></p>`;
+  $("#prog").innerHTML = ""; $("#bank").innerHTML = "";
+  $("#card").className = "card";
+  $("#card").innerHTML = `<div class="summary center"><h2 style="font-size:1.8rem;margin-bottom:8px">Great building, ${esc(S.name||"builder")}!</h2><div class="big">${g.right}/${g.total}</div><p>puzzles solved · ${g.earned} tile${g.earned===1?"":"s"} earned</p>${extra}</div>`;
+  $("#inputArea").innerHTML = `<div class="center" style="margin-top:16px"><button class="btn alt" id="done">${floorsToBuild ? `Build ${floorsToBuild} new floor${floorsToBuild===1?"":"s"}!` : "Back to my tower"}</button></div>`;
+  $("#done").onclick = () => { if(floorsToBuild) buildFloors(floorsToBuild); else { renderHome(); show("s-home"); } };
+  $("#done").focus();
+}
+function buildFloors(n){
+  if(n <= 0){ renderHome(); show("s-home"); return; }
+  const opts = [randomFloor(), randomFloor(), randomFloor(), randomFloor()];
+  openModal(`<h2>Pick your new floor!</h2><p>${n>1?`You have ${n} floors to build. `:""}Tap the one you like best.</p><div class="picks">${opts.map((f,i)=>`<button data-i="${i}" aria-label="Floor option ${i+1}">${floorPreview(f)}</button>`).join("")}</div>`);
+  $("#sheet").querySelectorAll(".picks button").forEach(b => b.onclick = () => {
+    S.tiles -= TILES_PER_FLOOR; S.floors.push(opts[+b.dataset.i]);
+    let done = false;
+    if(S.floors.length >= TOWER_FLOORS){ S.city.push(S.floors); S.floors = []; done = true; }
+    save(); closeModal();
+    if(done){
+      openModal(`<h2>Tower complete! 🎉</h2><div style="max-width:220px;margin:0 auto">${towerSVG(S.city[S.city.length-1], {flag:true, label:"finished tower"})}</div><p class="center">It’s going into your tile city. Time to start a brand-new tower!</p><div class="acts"><button class="btn alt" id="tc">Yay!</button></div>`);
+      $("#tc").onclick = () => { closeModal(); buildFloors(n-1); };
+    } else buildFloors(n-1);
+  });
+}
+function floorPreview(f){ let g = ""; for(let i=0;i<4;i++) g += tile(i*64, 0, 64, f.c[i], f.k); return `<svg viewBox="0 0 256 64" role="img" aria-label="floor">${g}</svg>`; }
+
+/* ===== home ===== */
+function renderHome(){
+  $("#tower").innerHTML = towerSVG(S.floors, {minRows: Math.max(4, Math.min(TOWER_FLOORS, S.floors.length+2)), ghost:true, label:`Tower with ${S.floors.length} floors`});
+  $("#towerCap").textContent = `${S.floors.length} of ${TOWER_FLOORS} floors`;
+  $("#hi").textContent = `Hi, ${S.name || "builder"}! Ready to build?`;
+  const left = TILES_PER_FLOOR - (S.tiles % TILES_PER_FLOOR);
+  $("#tilebank").innerHTML = `${miniTile(1)}${miniTile(4)}${miniTile(3)} <span>${S.tiles % TILES_PER_FLOOR} tile${S.tiles % TILES_PER_FLOOR===1?"":"s"} saved · ${left} more for a new floor</span>`;
+  const fi = S.unlocked-1, f = SKILLS[fi], st = sk(fi);
+  $("#skillName").textContent = `${f.name} (${f.ex})`;
+  $("#stages").innerHTML = STAGES.map((s,i) => `<div class="stg ${i+1===st.stage?"on":i+1<st.stage?"past":""}"><b>${s.ico}</b>${s.kid}</div>`).join("");
+  $("#stageNote").textContent = STAGES[st.stage-1].note + " Puzzles you already know get mixed in too.";
+  const sky = $("#skyline");
+  sky.innerHTML = S.city.length ? S.city.map((t,i) => towerSVG(t, {flag:true, label:"tower "+(i+1)})).join("") : `<span class="empty">Finish a ${TOWER_FLOORS}-floor tower and it moves here. Then you start a new one!</span>`;
+}
+
+/* ===== grown-ups ===== */
+function openGU(){
+  openModal(`<h2>Grown-ups only</h2><p>To open the grown-up page, type the answer to <b>8 × 7</b>.</p><input class="field" id="gate" inputmode="numeric" autocomplete="off" aria-label="Answer"><div class="acts"><button class="btn quiet" id="gx">Cancel</button><button class="btn" id="gok">Open</button></div>`);
+  $("#gx").onclick = closeModal;
+  const t = () => { if($("#gate").value.trim()==="56"){ closeModal(); renderGU(); show("s-gu"); } else { $("#gate").value=""; $("#gate").placeholder="Try again"; } };
+  $("#gok").onclick = t; $("#gate").addEventListener("keydown", e => { if(e.key==="Enter") t(); }); $("#gate").focus();
+}
+const backup = () => btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+function renderGU(){
+  const rows = SKILLS.map((s,i) => {
+    const st = sk(i), open = i < S.unlocked;
+    const sel = `<select data-si="${i}" aria-label="Stage for ${esc(s.name)}">${STAGES.map((g,j)=>`<option value="${j+1}" ${st.stage===j+1?"selected":""}>${g.ico} ${g.kid}</option>`).join("")}</select>`;
+    return `<tr><td><b>${esc(s.name)}</b><br><small>${esc(s.ex)}</small></td><td>${open ? sel : "<small>not yet</small>"}</td><td>${st.clean} on her own<br>${st.helped} with help · ${st.wrong} missed</td><td>${st.mastered?"⭐ mastered":""}</td></tr>`;
+  }).join("");
+  $("#s-gu").innerHTML = `
+  <div class="top"><h1 class="title">Grown-ups</h1><button class="btn quiet small" id="guBack">Back to the game</button></div>
+  <section><h2>How it works</h2>
+    <p>Each kind of puzzle moves through four stages that slowly take the blocks away: first she builds with on-screen base-ten blocks, then the blocks flash for four seconds and hide, then she solves with jumps on an open number line, and finally it’s numbers only. A puzzle moves up a stage after 4 of her last 5 are right without help, and drops back a stage if she misses 3 of 4, so she’s never stuck somewhere too hard.</p>
+    <p>“With help” means she peeked again or tapped Show me the blocks. That’s fine and encouraged, but it doesn’t count toward moving up. A new kind of puzzle unlocks once the newest one reaches the number-line stage, and older puzzles keep coming back for review.</p>
+  </section>
+  <section><h2>Her puzzles</h2>
+    <div class="tw"><table><tr><th>Puzzle</th><th>Stage</th><th>Answers</th><th></th></tr>${rows}</table></div>
+    <p style="margin-top:12px"><label for="guUnlock">Unlocked through:</label></p>
+    <select id="guUnlock">${SKILLS.map((s,i)=>`<option value="${i+1}" ${i+1===S.unlocked?"selected":""}>${esc(s.name)} (${esc(s.ex)})</option>`).join("")}</select>
+    <p style="margin-top:8px"><small>Use this and the stage menus to match what her class is doing. If she already knows a puzzle well, you can skip her past the blocks.</small></p>
+  </section>
+  <section><h2>Name</h2><input class="field" id="guName" maxlength="20" value="${esc(S.name)}" style="max-width:320px"><div class="rowbtns"><button class="btn small" id="guNameSave">Save name</button></div></section>
+  <section><h2>Backup code</h2>
+    <p>Progress is saved in this browser on this device only. Save this code somewhere to restore progress after a browser reset or on another device. Adding the game to the Home Screen also helps protect it.</p>
+    <textarea id="guCode" readonly>${backup()}</textarea>
+    <div class="rowbtns"><button class="btn quiet small" id="guCopy">Copy code</button></div>
+    <p style="margin-top:12px"><label for="guRestore">Restore from a code:</label></p>
+    <textarea id="guRestore" placeholder="Paste a backup code here"></textarea>
+    <div class="rowbtns"><button class="btn small" id="guRestoreBtn">Restore progress</button></div>
+    <p id="guMsg" aria-live="polite"></p>
+  </section>
+  <section><h2>Start over</h2><p>Erases puzzles, tiles and towers on this device.</p><div class="rowbtns"><button class="btn alt small" id="guReset">Erase progress</button></div></section>`;
+  $("#guBack").onclick = () => { renderHome(); show("s-home"); };
+  $("#s-gu").querySelectorAll("select[data-si]").forEach(s => s.onchange = () => { const st = sk(+s.dataset.si); st.stage = +s.value; st.hist = []; save(); });
+  $("#guUnlock").onchange = e => { S.unlocked = +e.target.value; save(); renderGU(); };
+  $("#guNameSave").onclick = () => { S.name = $("#guName").value.trim().slice(0,20); save(); $("#guNameSave").textContent = "Saved"; };
+  $("#guCopy").onclick = async () => { try{ await navigator.clipboard.writeText(backup()); $("#guCopy").textContent = "Copied"; }catch(e){ $("#guCode").select(); } };
+  $("#guRestoreBtn").onclick = () => { try{ const o = JSON.parse(decodeURIComponent(escape(atob($("#guRestore").value.trim())))); if(!o || !("sk" in o)) throw 0; S = Object.assign(defaults(), o); save(); renderGU(); $("#guMsg").textContent = "Progress restored."; }catch(e){ $("#guMsg").textContent = "That code didn’t work. Check that the whole code was pasted, then try again."; } };
+  $("#guReset").onclick = () => {
+    openModal(`<h2>Erase all progress?</h2><p>This removes every puzzle stage, tile, floor and tower on this device. It can’t be undone unless you saved a backup code.</p><div class="acts"><button class="btn quiet" id="rN">Keep progress</button><button class="btn alt" id="rY">Erase progress</button></div>`);
+    $("#rN").onclick = closeModal; $("#rY").onclick = () => { const nm = S.name; S = defaults(); S.name = nm; save(); closeModal(); renderGU(); };
+  };
+}
+
+/* ===== boot ===== */
+$("#startBtn").onclick = startSession;
+$("#openGU").onclick = openGU;
+$("#quit").onclick = () => { G = null; try{speechSynthesis.cancel()}catch(e){} renderHome(); show("s-home"); };
+$("#nameGo").onclick = () => { S.name = $("#nameIn").value.trim().slice(0,20); save(); renderHome(); show("s-home"); };
+$("#nameIn").addEventListener("keydown", e => { if(e.key==="Enter") $("#nameGo").click(); });
+document.addEventListener("keydown", e => {
+  if(!$("#modal").hidden || !G || G.locked || $("#s-play").hidden) return;
+  if(/^[0-9]$/.test(e.key)) press(Number(e.key)); else if(e.key==="Backspace") press("del"); else if(e.key==="Enter") press("ok");
+});
+if(!S.name){ $("#nameTower").innerHTML = towerSVG([{c:[0,1,2,3],k:1},{c:[4,5,6,0],k:2},{c:[3,4,3,4],k:0}], {flag:true}); show("s-name"); }
+else { renderHome(); show("s-home"); }
+window.__tt = {SKILLS, jumpSteps};
+})();
+</script>
+</body>
+</html>
